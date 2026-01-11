@@ -63,9 +63,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->query($sql);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        die("Query execution failed: " . $e->getMessage());
-    }
+        } catch (PDOException $e)
+    //instead of die, we changet it to handle app error
+    {
+    handleAppError("Query execution failed", $e->getMessage());
+    $ui_error = "The requested data is temporarily unavailable."; 
 }
+    }
+
+
 ?>
 
 <!DOCTYPE html>
@@ -119,7 +125,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
         </form>
-
+ <!-- Code added-adrian line 129-131 -->
+<? php if (isset($ui_error)): ?>
+    <div class="alert alert-warning"><?= $ui_error ?></div>
+<?php endif; ?>
         <!-- Results Table -->
         <?php if (isset($results)): ?>
             <table class="table table-striped table-bordered">
