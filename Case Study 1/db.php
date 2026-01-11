@@ -4,7 +4,7 @@ $host = 'localhost';
 $dbname = 'customer_segmentation_ph';
 $username = 'root'; 
 $password = '';     
-
+//line 8-28 was changed
 // 2. ERROR HANDLING FUNCTION (Must be defined before use)
 function handleAppError($userMessage, $technicalDetail = "", $isFatal = false) {
     // This logs the technical details to your server's hidden error log
