@@ -73,6 +73,9 @@ CREATE TABLE `customers` (
   `region` varchar(50) NOT NULL,
   `purchase_amount` decimal(10,2) NOT NULL,
   `upload_timestamp` timestamp NOT NULL DEFAULT current_timestamp()
+  `first_purchase_date` DATE DEFAULT '2023-01-01',
+  `total_purchase_count` INT DEFAULT 1,
+  `last_purchase_date` DATE DEFAULT CURRENT_DATE,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
