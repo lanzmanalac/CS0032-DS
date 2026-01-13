@@ -10111,6 +10111,23 @@ CREATE TABLE `segmentation_results` (
   `cluster_label` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `export_history`
+--
+
+CREATE TABLE `export_history` (
+  `export_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(50) NOT NULL,
+  `format` enum('CSV','PDF','EXCEL') NOT NULL,
+  `segmentation_type` varchar(50) NOT NULL,
+  `columns_exported` text DEFAULT NULL,
+  `export_timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`export_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 --
 -- Dumping data for table `segmentation_results`
 --
