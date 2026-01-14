@@ -50,9 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $cluster_details = [];
             }
             break;
-
+        
         case 'purchase_tier':
-            $sql = "SELECT CASE WHEN purchase_amount < 1000 THEN 'Low Spender (<1k)' WHEN purchase_amount BETWEEN 1000 AND 3000 THEN 'Medium Spender (1k-3k)' ELSE 'High Spender (>3k)' END AS purchase_tier, COUNT(*) AS total_customers, ROUND(AVG(income), 2) AS avg_income FROM customers GROUP BY purchase_tier ORDER BY purchase_tier";
+            $sql = "SELECT CASE WHEN purchase_amount < 1000 THEN 'Bronze' WHEN purchase_amount BETWEEN 1000 AND 3000 THEN 'Gold' ELSE 'Platinum' END AS clv_tier, COUNT(*) AS total_customers, ROUND(AVG(income), 2) AS avg_income FROM customers GROUP BY clv_tier ORDER BY total_customers DESC";
             break;
 
         default:
@@ -63,9 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->query($sql);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        } catch (PDOException $e)
     //instead of die, we changet it to handle app error
-    {
     handleAppError("Query execution failed", $e->getMessage());
     $ui_error = "The requested data is temporarily unavailable."; 
 }
@@ -125,8 +123,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
         </form>
- <!-- Code added-adrian line 129-131 -->
-<? php if (isset($ui_error)): ?>
+         <!-- Code added-ralph line 128-134 -->
+           <div id="clv-insight-container" class="mt-3 mb-3" style="display: none;">
+    <div class="alert alert-info">
+        <h4 class="alert-heading">Business Insight</h4>
+        <p id="insights-display"></p>
+    </div>
+</div>
+ <!-- Code added-adrian line 135-138 -->
+<?php if (isset($ui_error)): ?>
     <div class="alert alert-warning"><?= $ui_error ?></div>
 <?php endif; ?>
         <!-- Results Table -->
@@ -459,7 +464,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Prepare data for advanced visualizations
                     const clusterMetadata = <?= json_encode($cluster_metadata) ?>;
                     const clusterDetails = <?= json_encode($cluster_details) ?>;
-
+                    //<!-- Added-line-ralph-lines 470-471 -->
+                    const chartData = <?= json_encode($data ?? []) ?>; // Added this to access your SQL results
+                    const segmentationType = '<?= $segmentationType ?? "" ?>'; // Added to check current view
                     // Chart colors for clusters
                     const clusterColors = [
                         'rgba(255, 99, 132, 0.8)',
@@ -651,6 +658,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             }
                         }
                     });
+                    // --- BUSINESS INSIGHTS LOGIC-Added-ralph-lines:663-689 ---
+                    const insightBox = document.getElementById('insights-display');
+                    const container = document.getElementById('clv-insight-container');
+                    
+                    if (segmentationType === 'clv_tiers' && chartData.length > 0) {
+                        container.style.display = 'block';
+                        
+                        // Find counts for Platinum and Bronze
+                        const platinum = chartData.find(d => d.clv_tier === 'Platinum')?.total_customers || 0;
+                        const bronze = chartData.find(d => d.clv_tier === 'Bronze')?.total_customers || 0;
+
+                        let insightText = "";
+                        if (platinum > 0) {
+                            insightText = `Strategy: Your ${platinum} Platinum customers represent your highest ROI. Focus on a VIP 'Early Access' program to ensure they never churn.`;
+                        } else {
+                            insightText = "Strategy: No Platinum customers detected. Consider a 'Bridge Campaign' to upsell your Gold members using high-value bundles.";
+                        }
+                        
+                        // Add context about the lower tier
+                        if (bronze > (platinum * 2)) {
+                            insightText += ` Additionally, your Bronze tier is quite large (${bronze} users). A re-engagement email sequence could move them to Silver.`;
+                        }
+
+                        insightBox.innerText = insightText;
+                    } else {
+                        container.style.display = 'none';
+                    }
                 </script>
             <?php endif; ?>
         <?php endif; ?>
